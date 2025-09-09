@@ -115,6 +115,17 @@ func TestConnect(t *testing.T) {
 				t.Error("getDSN() returned empty string")
 			}
 
+			err = db.Ping()
+			if tt.mockErr != nil {
+				if err == nil {
+					t.Error("expected ping error but got none")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("unexpected ping error: %v", err)
+				}
+			}
+
 			if err := mock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
