@@ -1,0 +1,26 @@
+app_root = "."
+tmp_dir = "bin"
+
+[build]
+  cmd = "go build -gcflags='all=-N -l' -o bin/app ./cmd/main.go"
+  bin = "./bin/app"
+  full_bin = "APP_ENV=dev APP_USER=air ./bin/app"
+
+  include_ext = ["go", "env"]
+  exclude_dir = ["assets","web", "tmp", "vendor", "node_modules"]
+  exclude_file = [".vscode", ".gitignore", ".github", "tmp"]
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = true
+  args_bin = ["server"]
+  delay = 1000
+  kill_delay = 10
+
+[log]
+time = true
+
+[misc]
+clean_on_exit = true
+
+[screen]
+clear_on_rebuild = true
+keep_scroll = true

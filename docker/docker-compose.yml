@@ -1,0 +1,39 @@
+version: "3.4"
+
+services:
+    livereload:
+        build:
+            context: ".."
+            dockerfile: ./docker/golang-dev/Dockerfile
+        container_name: container-golang
+        environment:
+            - ENV=development
+        ports:
+            - "9000:9000"
+        volumes:
+            - ../:/app
+        networks:
+            - service-go
+
+    mysqldb:
+        image: mysql:5.7
+        platform: linux/arm64
+        container_name: container-mysql
+        environment:
+            MYSQL_DATABASE: scheduling
+            MYSQL_USER: root
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_PASSWORD: secret
+        volumes:
+            - mysql_data:/var/lib/mysql
+        ports:
+            - "3306:3306"
+        networks:
+            - service-go
+
+networks:
+    service-go:
+        driver: bridge
+
+volumes:
+    mysql_data:
