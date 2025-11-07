@@ -75,5 +75,6 @@ func (u *User) CheckPassword(password string) bool {
 func (u *User) ID() int              { return u.id }
 func (u *User) Name() string         { return u.name }
 func (u *User) Email() string        { return u.email.String() }
+func (u *User) Password() string     { return u.password }
 func (u *User) Role() string         { return u.role }
 func (u *User) CreatedAt() time.Time { return u.createdAt }

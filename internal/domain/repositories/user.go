@@ -1,8 +1,10 @@
 package repositories
 
-import "scheduling/internal/domain/entities"
+import (
+	"scheduling/internal/domain/entities"
+)
 
 type UserRepository interface {
-	FindByID(id int) (*entities.User, error)
+	Repository[entities.User]
 	Exists(id int) (bool, error)
 }
