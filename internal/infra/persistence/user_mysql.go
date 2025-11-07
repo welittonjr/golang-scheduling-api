@@ -210,3 +210,14 @@ func (r *UserMySQLRepository) Exists(ctx context.Context, id int) (bool, error) 
 
 	return count > 0, nil
 }
+
+func (r *UserMySQLRepository) EmailExist(ctx context.Context, email string) (bool, error) {
+	query := "SELECT COUNT(*) FROM users WHERE email = ? LIMIT 1"
+	var count int
+	err := r.db.QueryRowContext(ctx, query, email).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}

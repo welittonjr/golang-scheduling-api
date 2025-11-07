@@ -350,6 +350,115 @@ func TestUserMySQLRepository_Exists(t *testing.T) {
 	}
 }
 
+func TestUserMySQLRepository_EmailExist(t *testing.T) {
+	tests := []struct {
+		name    string
+		email  string
+		mockFn  func(sqlmock.Sqlmock)
+		want    bool
+		wantErr bool
+		errMsg  string
+	}{
+		{
+			name:   "usuário existe",
+			email: "joao@gmail.com",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"count"}).AddRow(1)
+				mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM users WHERE email = \\?").
+					WithArgs("joao@gmail.com").
+					WillReturnRows(rows)
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name:   "usuário não existe",
+			email: "joao@gmail.com",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"count"}).AddRow(0)
+				mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM users WHERE email = \\?").
+					WithArgs("joao@gmail.com").
+					WillReturnRows(rows)
+			},
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name:   "múltiplos usuários com mesmo ID (caso improvável mas testado)",
+			email: "maria@gmail.com",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"count"}).AddRow(2)
+				mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM users WHERE email = \\?").
+					WithArgs("maria@gmail.com").
+					WillReturnRows(rows)
+			},
+			want:    true,
+			wantErr: false,
+		},
+		{
+			name:   "erro no banco de dados",
+			email: "joao@gmail.com",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM users WHERE email = \\?").
+					WithArgs("joao@gmail.com").
+					WillReturnError(errors.New("database connection error"))
+			},
+			want:    false,
+			wantErr: true,
+			errMsg:  "database connection error",
+		},
+		{
+			name:   "erro no scan",
+			email: "joao@gmail.com",
+			mockFn: func(mock sqlmock.Sqlmock) {
+				rows := sqlmock.NewRows([]string{"count"}).AddRow("invalid_number")
+				mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM users WHERE email = \\?").
+					WithArgs("joao@gmail.com").
+					WillReturnRows(rows)
+			},
+			want:    false,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("erro ao criar mock do banco: %v", err)
+			}
+			defer db.Close()
+
+			tt.mockFn(mock)
+
+			repo := NewUserMySQLRepository(db)
+			got, err := repo.EmailExist(context.Background(), tt.email)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("erro esperado, mas não obtive nenhum")
+				}
+				if tt.errMsg != "" && err.Error() != tt.errMsg {
+					t.Errorf("erro esperado '%s', obtido '%s'", tt.errMsg, err.Error())
+				}
+				return
+			}
+
+			if err != nil {
+				t.Fatalf("erro inesperado: %v", err)
+			}
+
+			if got != tt.want {
+				t.Errorf("resultado esperado %v, obtido %v", tt.want, got)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("expectativas do mock não foram atendidas: %v", err)
+			}
+		})
+	}
+}
+
 func TestUserMySQLRepository_Update(t *testing.T) {
 	tests := []struct {
 		name    string
