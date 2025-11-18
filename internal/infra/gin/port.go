@@ -7,6 +7,7 @@ type Context interface {
 	JSON(status int, obj any) error
 	Status(code int)
 	Header(key, value string)
+	Set(key string, value any)
 }
 
 type Router interface {

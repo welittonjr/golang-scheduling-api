@@ -29,6 +29,9 @@ func (g *GinContext) Status(code int) {
 func (g *GinContext) Header(key, value string) {
 	g.ctx.Header(key, value)
 }
+func (g *GinContext) Set(key string, value any) {
+	g.ctx.Set(key, value)
+}
 
 func wrapHandler(h http.HandlerFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
