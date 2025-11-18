@@ -61,3 +61,23 @@ func (userService *UserService) Create(ctx context.Context, user entities.User) 
 
 	return nil
 }
+
+func (userService *UserService) Authentication(ctx context.Context, user entities.User) (bool, error) {
+	
+	userDB, err := userService.userRepo.FindByEmail(ctx, user.Email())	
+	if err != nil {
+		userService.logger.Error(
+			"Erro ao buscar usuário por email",
+			"error", err.Error(),
+			"email", user.Email(),
+			"operation", "user_service.fidByEmail",
+		)
+		return false, err
+	}
+
+	if !user.CheckPassword(userDB.Password()) {
+		return false, nil
+	}
+	
+	return true, nil
+}
